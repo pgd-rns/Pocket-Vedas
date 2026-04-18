@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:robobunny="http://robobunny.com">
+    <PreferenceCategory android:title="@string/content_title">
+        <CheckBoxPreference android:title="@string/pref_text" android:key="pref_text" android:summary="@string/pref_text_summary" android:defaultValue="true" />
+        <CheckBoxPreference android:title="@string/pref_synonyms" android:key="pref_synonyms" android:summary="@string/pref_synonyms_summary" android:defaultValue="true" />
+        <CheckBoxPreference android:title="@string/pref_translation" android:key="pref_translation" android:summary="@string/pref_translation_summary" android:defaultValue="true" />
+        <CheckBoxPreference android:title="@string/pref_purport" android:key="pref_purport" android:summary="@string/pref_purport_summary" android:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/display_title">
+        <com.robobunny.SeekBarPreference android:max="300" android:title="@string/pref_zoom" android:key="pref_zoom" android:summary="@string/pref_zoom_summary" android:defaultValue="133" robobunny:min="50" robobunny:unitsLeft="" robobunny:unitsRight="%" />
+        <CheckBoxPreference android:title="@string/pref_reverse" android:key="pref_reverse" android:summary="@string/pref_reverse_summary" android:defaultValue="true" />
+        <CheckBoxPreference android:title="@string/pref_keep_awake" android:key="pref_keep_awake" android:summary="@string/pref_keep_awake_summary" android:defaultValue="false" />
+    </PreferenceCategory>
+</PreferenceScreen>

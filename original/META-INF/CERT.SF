@@ -1,0 +1,136 @@
+Signature-Version: 1.0
+Created-By: 1.0 (Android)
+SHA1-Digest-Manifest: aV/3QXTnzL0azyRWg7gHfvW4T84=
+
+Name: res/drawable-xhdpi/ic_launcher.png
+SHA1-Digest: knc7Jlu0lxqU9J6Vma0ogEpXKGI=
+
+Name: res/xml/preferences.xml
+SHA1-Digest: G4UYxznv7VapF9OXYfkEvF7oRA8=
+
+Name: res/drawable-mdpi/ic_action_search.png
+SHA1-Digest: jAGFiT7RUDOYcmBQqk2FP01Xtb0=
+
+Name: res/menu/activity_books.xml
+SHA1-Digest: VNaRh11pT7XAEfGfeM3Wkv8mQ6Q=
+
+Name: res/menu/activity_bookmarks.xml
+SHA1-Digest: 1+zb/CxDRFTPsxf8d7cikp9Z5c8=
+
+Name: res/drawable-hdpi/ic_launcher.png
+SHA1-Digest: 0QHYBXExOw/Ud7xAOXBPffm6Nro=
+
+Name: assets/web/DejaVuSans-Bold.ttf
+SHA1-Digest: 3fkByg1bMbYpLPGHPwD85vI1bDg=
+
+Name: res/drawable-ldpi/bookmark_plain.png
+SHA1-Digest: 9/FnXGFdu8kWnSq83QQ/bWc5iTk=
+
+Name: res/layout/activity_search.xml
+SHA1-Digest: +IC0HSn1B9NSBa81TsMPhxD7BMY=
+
+Name: res/layout/dialog_add_bookmark.xml
+SHA1-Digest: 9tx3oyw04whHch95cwx9d2yCpPg=
+
+Name: resources.arsc
+SHA1-Digest: LoDzCvFnOTWFUfoeHwgO9RA9ddA=
+
+Name: res/menu/activity_search.xml
+SHA1-Digest: O13Dnw5W6J2j1DjAwhgDWCaPhLk=
+
+Name: res/drawable-xhdpi/bookmark_star.png
+SHA1-Digest: g3GU8sK0JdKwsg6RsGcK/87K2j0=
+
+Name: assets/web/bg-texture.png
+SHA1-Digest: andr0rsJSpquytpz9Nw69n7tOaU=
+
+Name: assets/raw/vedabase.db
+SHA1-Digest: KkxBGAjbRNCz8V1z+SZMqkqQ6k8=
+
+Name: res/drawable-ldpi/ic_launcher.png
+SHA1-Digest: 3CtFTb0bghvCefPrfyT0YVt3Tc8=
+
+Name: res/layout/activity_bookmarks.xml
+SHA1-Digest: GS31T3jYBAONN8jSB08C5C0AB24=
+
+Name: res/menu/bookmark_list_menu.xml
+SHA1-Digest: OUHYdgT5GRScCpUmKZltQS+7Cws=
+
+Name: AndroidManifest.xml
+SHA1-Digest: j8QoaNrKa18Aday+LiNzwbtTAKg=
+
+Name: res/drawable-hdpi/bookmark_star.png
+SHA1-Digest: VMFeH2NDTmGiDRIY2HcByUfrLdk=
+
+Name: res/drawable-hdpi/bookmark_plain.png
+SHA1-Digest: E5gWf/jDSvD42dt5EXs7HjIH088=
+
+Name: assets/raw/info.html
+SHA1-Digest: 87TTabO8A/DCSCPmUjWQCDTh31I=
+
+Name: res/menu/activity_reading.xml
+SHA1-Digest: xlOL/xVWKyFmnPIvo/cdJVoMWxI=
+
+Name: res/layout/activity_books.xml
+SHA1-Digest: bVMAeLg09IP1B1Xq1DwhgFgUn0c=
+
+Name: res/menu/activity_about.xml
+SHA1-Digest: kw4Tka2XEZo3pR5zj7m+h8eeQGw=
+
+Name: res/layout/bookmark_item.xml
+SHA1-Digest: N2unspXhH+qsr00Zv4Ncot4tdQM=
+
+Name: assets/raw/dbversion.txt
+SHA1-Digest: Ikic9f357XxxU996JfGNhmSZmzo=
+
+Name: res/xml/oldpreferences.xml
+SHA1-Digest: RygZjvoWfcSxXcuBbRPPHX+AKLM=
+
+Name: res/drawable-mdpi/bookmark_star.png
+SHA1-Digest: 6lpZnk9JYllk0Blv5QB8acHQs7M=
+
+Name: res/drawable-xhdpi/bookmark_plain.png
+SHA1-Digest: NXh++FyaP4m1oLdMMB8EVhf2t7Q=
+
+Name: res/layout/activity_about.xml
+SHA1-Digest: cUNCmQx3EynwurBV2tTu/Of5fHQ=
+
+Name: classes.dex
+SHA1-Digest: AD4W1urFj2xaiqBHu+ksgZiXzUU=
+
+Name: res/layout/seek_bar_preference.xml
+SHA1-Digest: bmrdTRDtvq74IA9YhgkdZg9tx4w=
+
+Name: res/layout/search_item.xml
+SHA1-Digest: DoA7OGRlJqYD0vXQZg2gHL63ppI=
+
+Name: assets/web/DejaVuSans-Oblique.ttf
+SHA1-Digest: 0wsr5IIvFR34oo27eA9+5TbUE9s=
+
+Name: assets/web/DejaVuSans.ttf
+SHA1-Digest: pPPT4E18srzeN14N4HR/bxWWoFQ=
+
+Name: res/drawable-mdpi/ic_launcher.png
+SHA1-Digest: ybWroN7oXUsMmxmdcInvzdA7CyM=
+
+Name: assets/raw/bookmarks.db
+SHA1-Digest: 3J7v6mytdbkHXCrx/OBj/Y1TeXg=
+
+Name: res/drawable-mdpi/bookmark_plain.png
+SHA1-Digest: VuOXXdIqEYC5CjnxaOIudbdNjTU=
+
+Name: res/xml/searchable.xml
+SHA1-Digest: lfqgYXkgQUOqPR0n+9BlraHmfFE=
+
+Name: res/drawable-ldpi/bookmark_star.png
+SHA1-Digest: JUSHer7AF5AQqu9D7wRj6hPuaOg=
+
+Name: res/layout/activity_reading.xml
+SHA1-Digest: qcB1EV8Nyy4GBS8UIEgWefRroH0=
+
+Name: res/drawable-hdpi/ic_action_search.png
+SHA1-Digest: WvsoZfcfGbz7vtTCwzXLh3VcxFw=
+
+Name: res/drawable-xhdpi/ic_action_search.png
+SHA1-Digest: 772ITFXOlprwo44bOLvLMa3Vdeg=
+

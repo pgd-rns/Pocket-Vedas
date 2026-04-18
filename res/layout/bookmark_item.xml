@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/bookmark_icon" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_margin="2.0sp" android:contentDescription="@string/bookmark_type" />
+    <TextView android:textSize="24.0sp" android:textStyle="bold" android:id="@id/bookmark_verse" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="5.0sp" android:layout_marginRight="5.0sp" android:text="" android:lines="1" />
+    <TextView android:textSize="15.0sp" android:id="@id/bkmk_description" android:layout_width="wrap_content" android:layout_height="match_parent" android:text="" android:lines="2" />
+</LinearLayout>

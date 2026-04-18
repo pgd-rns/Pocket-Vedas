@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@id/menu_settings" android:orderInCategory="100" android:title="@string/menu_settings" android:showAsAction="never" />
+    <item android:id="@id/menu_about" android:orderInCategory="101" android:title="@string/menu_about" android:showAsAction="never" />
+    <item android:id="@id/menu_bookmarks" android:orderInCategory="102" android:title="@string/menu_bookmarks" android:showAsAction="never" />
+    <item android:id="@id/menu_search" android:title="Search" android:showAsAction="ifRoom" android:actionViewClass="android.widget.SearchView" />
+    <item android:id="@id/menu_add_bookmark" android:orderInCategory="102" android:title="@string/menu_add_bookmark" android:showAsAction="never" />
+</menu>

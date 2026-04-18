@@ -1,0 +1,21 @@
+package android.support.v4.d;
+
+import android.content.Context;
+import android.graphics.Canvas;
+
+/* loaded from: classes.dex */
+interface j {
+    Object a(Context context);
+
+    void a(Object obj, int i, int i2);
+
+    boolean a(Object obj);
+
+    boolean a(Object obj, float f);
+
+    boolean a(Object obj, Canvas canvas);
+
+    void b(Object obj);
+
+    boolean c(Object obj);
+}

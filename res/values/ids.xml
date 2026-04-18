@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <id name="aboutWebView" />
+    <id name="gridView1" />
+    <id name="pager" />
+    <id name="bookmark_icon" />
+    <id name="bookmark_verse" />
+    <id name="bkmk_description" />
+    <id name="bookmark_description" />
+    <id name="bookmark_dynamic" />
+    <id name="verse_name" />
+    <id name="match_found" />
+    <id name="seekBarPrefUnitsRight" />
+    <id name="seekBarPrefValue" />
+    <id name="seekBarPrefUnitsLeft" />
+    <id name="seekBarPrefBarContainer" />
+    <id name="seekBarPrefSeekBar" />
+    <id name="menu_settings" />
+    <id name="menu_about" />
+    <id name="menu_bookmarks" />
+    <id name="menu_search" />
+    <id name="menu_add_bookmark" />
+    <id name="remove_item" />
+</resources>
