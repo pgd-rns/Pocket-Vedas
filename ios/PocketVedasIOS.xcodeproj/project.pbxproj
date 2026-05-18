@@ -1,5 +1,8 @@
 // !$*UTF8*$!
 {
+	archiveVersion = 1;
+	classes = {
+	};
 	objectVersion = 56;
 	objects = {
 
@@ -47,8 +50,6 @@
 		};
 		A00000000000000000000031 /* PocketVedasIOS */ = {
 			isa = PBXGroup;
-			path = PocketVedasIOS;
-			sourceTree = "<group>";
 			children = (
 				A00000000000000000000001 /* PocketVedasIOSApp.swift */,
 				A00000000000000000000002 /* Models.swift */,
@@ -59,6 +60,8 @@
 				A00000000000000000000007 /* raw */,
 				A00000000000000000000008 /* web */,
 			);
+			path = PocketVedasIOS;
+			sourceTree = "<group>";
 		};
 		A00000000000000000000032 /* Products */ = {
 			isa = PBXGroup;
@@ -157,7 +160,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KPVM7M74X9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pocket Vedas";
@@ -187,7 +190,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KPVM7M74X9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pocket Vedas";

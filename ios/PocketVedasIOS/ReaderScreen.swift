@@ -6,6 +6,7 @@ struct ReaderScreen: View {
 
     @State private var currentPage: ReaderPage?
     @State private var currentPath: String
+    @State private var nextPath = ""
 
     init(initialPath: String) {
         self.initialPath = initialPath
@@ -16,8 +17,7 @@ struct ReaderScreen: View {
         Group {
             if let currentPage {
                 HTMLWebView(html: currentPage.html) { path in
-                    currentPath = path
-                    loadPage()
+                    nextPath = path
                 }
             } else {
                 ProgressView()
@@ -34,12 +34,18 @@ struct ReaderScreen: View {
                         database.lastError = error.localizedDescription
                     }
                 } label: {
-                    Image(systemName: "bookmark.badge.plus")
+                    Image(systemName: "bookmark")
                 }
             }
         }
         .task(id: currentPath) {
             loadPage()
+        }
+        .navigationDestination(isPresented: Binding(
+            get: { !nextPath.isEmpty },
+            set: { if !$0 { nextPath = "" } }
+        )) {
+            ReaderScreen(initialPath: nextPath)
         }
     }
 

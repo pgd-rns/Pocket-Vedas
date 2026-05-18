@@ -103,7 +103,7 @@ final class AppDatabase: ObservableObject {
         ).appendingPathComponent("PocketVedas", isDirectory: true)
         try fileManager.createDirectory(at: supportDirectory, withIntermediateDirectories: true)
 
-        let vedabaseURL = try copyBundleResourceIfNeeded(
+        let vedabaseURL = try copyReadOnlyDatabaseIfNeeded(
             named: "vedabase",
             ext: "db",
             subdirectory: "raw",
@@ -127,12 +127,56 @@ final class AppDatabase: ObservableObject {
     private func copyBundleResourceIfNeeded(named: String, ext: String, subdirectory: String, to destination: URL) throws -> URL {
         let fileManager = FileManager.default
         if !fileManager.fileExists(atPath: destination.path) {
-            guard let source = Bundle.main.url(forResource: named, withExtension: ext, subdirectory: subdirectory) else {
+            guard let source = bundleResourceURL(named: named, ext: ext, subdirectory: subdirectory) else {
                 throw DatabaseError.missingResource("\(named).\(ext)")
             }
             try fileManager.copyItem(at: source, to: destination)
         }
         return destination
+    }
+
+    private func copyReadOnlyDatabaseIfNeeded(named: String, ext: String, subdirectory: String, to destination: URL) throws -> URL {
+        let fileManager = FileManager.default
+        guard let source = bundleResourceURL(named: named, ext: ext, subdirectory: subdirectory) else {
+            throw DatabaseError.missingResource("\(named).\(ext)")
+        }
+
+        let shouldCopy: Bool
+        if fileManager.fileExists(atPath: destination.path) {
+            shouldCopy = (try? bundledDatabaseIsNewer(source: source, destination: destination)) ?? true
+        } else {
+            shouldCopy = true
+        }
+
+        if shouldCopy {
+            if fileManager.fileExists(atPath: destination.path) {
+                try fileManager.removeItem(at: destination)
+            }
+            try fileManager.copyItem(at: source, to: destination)
+        }
+
+        return destination
+    }
+
+    private func bundledDatabaseIsNewer(source: URL, destination: URL) throws -> Bool {
+        let sourceVersion = try databaseVersion(at: source)
+        let destinationVersion = try databaseVersion(at: destination)
+        return sourceVersion > destinationVersion
+    }
+
+    private func databaseVersion(at url: URL) throws -> Int64 {
+        var db: OpaquePointer?
+        guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else {
+            throw DatabaseError.openFailed("Unable to inspect \(url.lastPathComponent)")
+        }
+        defer { sqlite3_close(db) }
+
+        return try scalarInt64(db: db, sql: "SELECT version FROM version LIMIT 1")
+    }
+
+    private func bundleResourceURL(named: String, ext: String, subdirectory: String) -> URL? {
+        Bundle.main.url(forResource: named, withExtension: ext, subdirectory: subdirectory)
+            ?? Bundle.main.url(forResource: named, withExtension: ext)
     }
 
     private func loadBooks() throws {
@@ -183,36 +227,70 @@ final class AppDatabase: ObservableObject {
             bind: { sqlite3_bind_text($0, 1, bookName, -1, SQLITE_TRANSIENT) }
         )
 
+        let indexID = try indexDivisionID(forBookID: bookID)
         if components.count == 1 || (components.count == 2 && components[1] == "index") {
-            return bookID
+            return indexID
         }
 
-        var parent: Int64 = 0
-        var current: Int64 = 0
-        for part in components.dropFirst() {
-            current = try scalarInt64(
-                db: vedabase,
-                sql: "SELECT rowid FROM division WHERE name = ? AND book = ? AND parent = ?",
-                bind: {
-                    sqlite3_bind_text($0, 1, part, -1, SQLITE_TRANSIENT)
-                    sqlite3_bind_int64($0, 2, bookID)
-                    sqlite3_bind_int64($0, 3, parent)
-                }
-            )
+        var parent = indexID
+        var current = indexID
+        var pathParts = Array(components.dropFirst())
+        if pathParts.count > 1 && pathParts.last == "index" {
+            pathParts.removeLast()
+        }
+
+        for part in pathParts {
+            current = try divisionID(named: part, bookID: bookID, parent: parent)
             parent = current
         }
         return current
     }
 
-    private func path(forDivision rowID: Int64) throws -> String {
-        if let name = try optionalString(
+    private func indexDivisionID(forBookID bookID: Int64) throws -> Int64 {
+        try scalarInt64(
             db: vedabase,
-            sql: "SELECT name FROM book WHERE rowid = ?",
-            bind: { sqlite3_bind_int64($0, 1, rowID) }
+            sql: "SELECT rowid FROM division WHERE name = 'index' AND book = ? AND parent = 0",
+            bind: { sqlite3_bind_int64($0, 1, bookID) }
+        )
+    }
+
+    private func divisionID(named name: String, bookID: Int64, parent: Int64) throws -> Int64 {
+        if let exact = try optionalInt64(
+            db: vedabase,
+            sql: "SELECT rowid FROM division WHERE name = ? AND book = ? AND parent = ?",
+            bind: {
+                sqlite3_bind_text($0, 1, name, -1, SQLITE_TRANSIENT)
+                sqlite3_bind_int64($0, 2, bookID)
+                sqlite3_bind_int64($0, 3, parent)
+            }
         ) {
-            return "\(name)/index"
+            return exact
         }
 
+        if let numericPrefix = numericPrefix(in: name),
+           let rangeMatch = try optionalInt64(
+            db: vedabase,
+            sql: "SELECT rowid FROM division WHERE CAST(substr(name, 1, instr(name || '-', '-') - 1) AS INTEGER) <= ? AND CAST(substr(name, instr(name || '-', '-') + 1) AS INTEGER) >= ? AND instr(name, '-') > 0 AND book = ? AND parent = ? LIMIT 1",
+            bind: {
+                sqlite3_bind_int64($0, 1, numericPrefix)
+                sqlite3_bind_int64($0, 2, numericPrefix)
+                sqlite3_bind_int64($0, 3, bookID)
+                sqlite3_bind_int64($0, 4, parent)
+            }
+           ) {
+            return rangeMatch
+        }
+
+        throw DatabaseError.invalidPath(name)
+    }
+
+    private func numericPrefix(in value: String) -> Int64? {
+        let digits = value.prefix { $0.isNumber }
+        guard !digits.isEmpty else { return nil }
+        return Int64(digits)
+    }
+
+    private func path(forDivision rowID: Int64) throws -> String {
         var components: [String] = []
         var current = rowID
         var bookID: Int64 = 0
@@ -221,9 +299,13 @@ final class AppDatabase: ObservableObject {
             let sql = "SELECT name, parent, book FROM division WHERE rowid = ?"
             var found = false
             try query(db: vedabase, sql: sql, bind: { sqlite3_bind_int64($0, 1, current) }) { stmt in
-                components.insert(String(cString: sqlite3_column_text(stmt, 0)), at: 0)
-                current = sqlite3_column_int64(stmt, 1)
+                let name = String(cString: sqlite3_column_text(stmt, 0))
+                let parent = sqlite3_column_int64(stmt, 1)
                 bookID = sqlite3_column_int64(stmt, 2)
+                if !(name == "index" && parent == 0) {
+                    components.insert(name, at: 0)
+                }
+                current = parent
                 found = true
             }
             if !found {
@@ -236,6 +318,9 @@ final class AppDatabase: ObservableObject {
             sql: "SELECT name FROM book WHERE rowid = ?",
             bind: { sqlite3_bind_int64($0, 1, bookID) }
         )
+        if components.isEmpty {
+            return "\(bookName)/index"
+        }
         return ([bookName] + components).joined(separator: "/")
     }
 
@@ -248,9 +333,8 @@ final class AppDatabase: ObservableObject {
 
     private func htmlShell(_ content: String) -> String {
         """
-        <!doctype html>
-        <html>
-        <head>
+        <HTML xmlns:vb="http://www.vedabase.com">
+        <HEAD>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
@@ -279,11 +363,7 @@ final class AppDatabase: ObservableObject {
             a { color: #7e2b23; text-decoration: none; }
             mark { background: #ffef8a; }
           </style>
-        </head>
-        <body>
         \(content)
-        </body>
-        </html>
         """
     }
 
@@ -345,6 +425,21 @@ final class AppDatabase: ObservableObject {
         guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
         guard let text = sqlite3_column_text(stmt, 0) else { return nil }
         return String(cString: text)
+    }
+
+    private func optionalInt64(
+        db: OpaquePointer?,
+        sql: String,
+        bind: ((OpaquePointer?) -> Void)? = nil
+    ) throws -> Int64? {
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            throw DatabaseError.queryFailed(sql)
+        }
+        defer { sqlite3_finalize(stmt) }
+        bind?(stmt)
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        return sqlite3_column_int64(stmt, 0)
     }
 
     private func scalarInt64(
