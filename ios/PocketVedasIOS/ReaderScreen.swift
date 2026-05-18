@@ -25,19 +25,7 @@ struct ReaderScreen: View {
         }
         .navigationTitle(currentPage?.title ?? "Reading")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    do {
-                        try database.addBookmark(path: currentPath)
-                    } catch {
-                        database.lastError = error.localizedDescription
-                    }
-                } label: {
-                    Image(systemName: "bookmark")
-                }
-            }
-        }
+        .pocketToolbar(title: currentPage?.title ?? "Reading", bookmarkPath: currentPath)
         .task(id: currentPath) {
             loadPage()
         }

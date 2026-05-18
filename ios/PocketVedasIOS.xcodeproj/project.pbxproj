@@ -15,6 +15,7 @@
 		A00000000000000000000015 /* HTMLWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000006 /* HTMLWebView.swift */; };
 		A00000000000000000000016 /* raw in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000007 /* raw */; };
 		A00000000000000000000017 /* web in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* web */; };
+		A00000000000000000000018 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000A /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		A00000000000000000000007 /* raw */ = {isa = PBXFileReference; lastKnownFileType = folder; name = raw; path = ../assets/raw; sourceTree = SOURCE_ROOT; };
 		A00000000000000000000008 /* web */ = {isa = PBXFileReference; lastKnownFileType = folder; name = web; path = ../assets/web; sourceTree = SOURCE_ROOT; };
 		A00000000000000000000009 /* PocketVedasIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = PocketVedasIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0000000000000000000000A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				A00000000000000000000004 /* RootView.swift */,
 				A00000000000000000000005 /* ReaderScreen.swift */,
 				A00000000000000000000006 /* HTMLWebView.swift */,
+				A0000000000000000000000A /* Assets.xcassets */,
 				A00000000000000000000007 /* raw */,
 				A00000000000000000000008 /* web */,
 			);
@@ -129,6 +132,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A00000000000000000000018 /* Assets.xcassets in Resources */,
 				A00000000000000000000016 /* raw in Resources */,
 				A00000000000000000000017 /* web in Resources */,
 			);
@@ -157,6 +161,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -187,6 +192,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

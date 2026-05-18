@@ -1,7 +1,22 @@
 import SwiftUI
 
+enum AppTab: Hashable {
+    case books
+    case search
+    case bookmarks
+}
+
+@MainActor
+final class AppNavigationState: ObservableObject {
+    @Published var selectedTab: AppTab = .books
+    @Published var showAbout = false
+    @Published var showSettings = false
+}
+
 struct RootView: View {
     @EnvironmentObject private var database: AppDatabase
+    @StateObject private var navigation = AppNavigationState()
+
     private var showingError: Binding<Bool> {
         Binding(
             get: { database.lastError != nil },
@@ -10,10 +25,11 @@ struct RootView: View {
     }
 
     var body: some View {
-        TabView {
+        TabView(selection: $navigation.selectedTab) {
             NavigationStack {
                 BooksView()
             }
+            .tag(AppTab.books)
             .tabItem {
                 Label("Books", systemImage: "books.vertical")
             }
@@ -21,6 +37,7 @@ struct RootView: View {
             NavigationStack {
                 SearchScreen()
             }
+            .tag(AppTab.search)
             .tabItem {
                 Label("Search", systemImage: "magnifyingglass")
             }
@@ -28,21 +45,32 @@ struct RootView: View {
             NavigationStack {
                 BookmarksView()
             }
+            .tag(AppTab.bookmarks)
             .tabItem {
                 Label("Bookmarks", systemImage: "bookmark")
             }
         }
+        .environmentObject(navigation)
         .alert("Database Error", isPresented: showingError, actions: {
             Button("OK") { database.lastError = nil }
         }, message: {
             Text(database.lastError ?? "")
         })
+        .sheet(isPresented: $navigation.showAbout) {
+            NavigationStack {
+                StaticHTMLScreen(title: "About", html: database.aboutHTML())
+            }
+        }
+        .sheet(isPresented: $navigation.showSettings) {
+            NavigationStack {
+                SettingsScreen()
+            }
+        }
     }
 }
 
 struct BooksView: View {
     @EnvironmentObject private var database: AppDatabase
-    @State private var showAbout = false
 
     private let columns = [GridItem(.adaptive(minimum: 130), spacing: 16)]
 
@@ -85,21 +113,13 @@ struct BooksView: View {
                 .ignoresSafeArea()
         )
         .navigationTitle("Pocket Vedas")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("About") { showAbout = true }
-            }
-        }
+        .navigationBarTitleDisplayMode(.inline)
+        .pocketToolbar(title: "Pocket Vedas")
         .navigationDestination(for: String.self) { token in
             if token.hasPrefix("book:"),
                let id = Int64(token.replacingOccurrences(of: "book:", with: "")),
                let book = database.books.first(where: { $0.id == id }) {
                 ReaderScreen(initialPath: "\(book.name)/index")
-            }
-        }
-        .sheet(isPresented: $showAbout) {
-            NavigationStack {
-                StaticHTMLScreen(title: "About", html: database.aboutHTML())
             }
         }
     }
@@ -126,6 +146,8 @@ struct SearchScreen: View {
             }
         }
         .navigationTitle("Search")
+        .navigationBarTitleDisplayMode(.inline)
+        .pocketToolbar(title: "Pocket Vedas")
         .searchable(text: $query, prompt: "Search scripture")
         .onSubmit(of: .search) {
             do {
@@ -172,12 +194,44 @@ struct BookmarksView: View {
             }
         }
         .navigationTitle("Bookmarks")
+        .navigationBarTitleDisplayMode(.inline)
+        .pocketToolbar(title: "Pocket Vedas")
         .navigationDestination(isPresented: Binding(
             get: { !selectedPath.isEmpty },
             set: { if !$0 { selectedPath = "" } }
         )) {
             ReaderScreen(initialPath: selectedPath)
         }
+    }
+}
+
+struct SettingsScreen: View {
+    @AppStorage("pref_text") private var showText = true
+    @AppStorage("pref_synonyms") private var showSynonyms = true
+    @AppStorage("pref_translation") private var showTranslation = true
+    @AppStorage("pref_purport") private var showPurport = true
+    @AppStorage("pref_zoom") private var textSize = 133.0
+    @AppStorage("pref_reverse") private var blackOnWhite = true
+    @AppStorage("pref_keep_awake") private var keepAwake = false
+
+    var body: some View {
+        Form {
+            Section("Content") {
+                Toggle("Display Text", isOn: $showText)
+                Toggle("Display Synonyms", isOn: $showSynonyms)
+                Toggle("Display Translation", isOn: $showTranslation)
+                Toggle("Display Purport", isOn: $showPurport)
+            }
+
+            Section("Display") {
+                Stepper("Text size \(Int(textSize))%", value: $textSize, in: 50...300, step: 5)
+                Toggle("Black on White", isOn: $blackOnWhite)
+                Toggle("Keep awake", isOn: $keepAwake)
+            }
+        }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .pocketToolbar(title: "Settings")
     }
 }
 
@@ -189,5 +243,126 @@ struct StaticHTMLScreen: View {
         HTMLWebView(html: html, onOpenPath: { _ in })
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
+            .pocketToolbar(title: title)
+    }
+}
+
+struct PocketToolbarModifier: ViewModifier {
+    @EnvironmentObject private var navigation: AppNavigationState
+    @EnvironmentObject private var database: AppDatabase
+
+    let title: String
+    let bookmarkPath: String?
+    @State private var showAddBookmark = false
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Image("LauncherIcon")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 5))
+
+                        Text(title)
+                            .font(.headline)
+                            .foregroundStyle(.black)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+                
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        navigation.selectedTab = .search
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+
+                    Menu {
+                        if bookmarkPath != nil {
+                            Button {
+                                showAddBookmark = true
+                            } label: {
+                                Label("Add bookmark", systemImage: "bookmark")
+                            }
+                        }
+
+                        Button {
+                            navigation.showSettings = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+
+                        Button {
+                            navigation.showAbout = true
+                        } label: {
+                            Label("About", systemImage: "info.circle")
+                        }
+
+                        Button {
+                            navigation.selectedTab = .bookmarks
+                        } label: {
+                            Label("Bookmarks", systemImage: "bookmark")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                }
+            }
+            .toolbarColorScheme(.light, for: .navigationBar)
+            .toolbarBackground(Color(.systemBackground), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .sheet(isPresented: $showAddBookmark) {
+                if let bookmarkPath {
+                    NavigationStack {
+                        AddBookmarkScreen(path: bookmarkPath)
+                            .environmentObject(database)
+                    }
+                }
+            }
+    }
+}
+
+struct AddBookmarkScreen: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var database: AppDatabase
+
+    let path: String
+    @State private var description = ""
+    @State private var dynamic = false
+
+    var body: some View {
+        Form {
+            Section {
+                TextField("Bookmark description", text: $description)
+                Toggle("Dynamic", isOn: $dynamic)
+            }
+        }
+        .navigationTitle("Add bookmark")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+
+            ToolbarItem(placement: .confirmationAction) {
+                Button("OK") {
+                    do {
+                        try database.addBookmark(path: path, description: description, smart: dynamic)
+                        dismiss()
+                    } catch {
+                        database.lastError = error.localizedDescription
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension View {
+    func pocketToolbar(title: String, bookmarkPath: String? = nil) -> some View {
+        modifier(PocketToolbarModifier(title: title, bookmarkPath: bookmarkPath))
     }
 }

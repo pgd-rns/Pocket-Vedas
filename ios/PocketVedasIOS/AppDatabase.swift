@@ -10,6 +10,13 @@ final class AppDatabase: ObservableObject {
     private var vedabase: OpaquePointer?
     private var bookmarkDB: OpaquePointer?
 
+    private var showText: Bool { settingBool("pref_text", defaultValue: true) }
+    private var showSynonyms: Bool { settingBool("pref_synonyms", defaultValue: true) }
+    private var showTranslation: Bool { settingBool("pref_translation", defaultValue: true) }
+    private var showPurport: Bool { settingBool("pref_purport", defaultValue: true) }
+    private var textSizePercent: Double { settingDouble("pref_zoom", defaultValue: 133.0) }
+    private var blackOnWhite: Bool { settingBool("pref_reverse", defaultValue: true) }
+
     init() {
         do {
             try prepareDatabases()
@@ -331,8 +338,26 @@ final class AppDatabase: ObservableObject {
             .joined(separator: " ")
     }
 
+    private func settingBool(_ key: String, defaultValue: Bool) -> Bool {
+        guard UserDefaults.standard.object(forKey: key) != nil else { return defaultValue }
+        return UserDefaults.standard.bool(forKey: key)
+    }
+
+    private func settingDouble(_ key: String, defaultValue: Double) -> Double {
+        guard UserDefaults.standard.object(forKey: key) != nil else { return defaultValue }
+        return UserDefaults.standard.double(forKey: key)
+    }
+
     private func htmlShell(_ content: String) -> String {
-        """
+        let foreground = blackOnWhite ? "#1f1d1a" : "#f7f2ea"
+        let background = blackOnWhite ? "#f5f0e7" : "#000000"
+        let displayText = showText ? "block" : "none"
+        let displaySynonyms = showSynonyms ? "block" : "none"
+        let displayTranslation = showTranslation ? "block" : "none"
+        let displayPurport = showPurport ? "block" : "none"
+        let fontSize = max(8, min(36, 12.0 * textSizePercent / 100.0))
+
+        return """
         <HTML xmlns:vb="http://www.vedabase.com">
         <HEAD>
           <meta charset="utf-8">
@@ -344,9 +369,9 @@ final class AppDatabase: ObservableObject {
             body {
               margin: 0;
               padding: 20px 14px 100px;
-              background: #f5f0e7 url('bg-texture.png') repeat;
-              color: #1f1d1a;
-              font: 18px/1.55 DejaVu, serif;
+              background: \(background) url('bg-texture.png') repeat;
+              color: \(foreground);
+              font: \(fontSize)pt/1.55 DejaVu, serif;
               -webkit-text-size-adjust: none;
             }
             .header, .section-title {
@@ -356,6 +381,7 @@ final class AppDatabase: ObservableObject {
               text-decoration: underline;
             }
             .space { clear: both; }
+            .text { display: \(displayText); }
             .text-inner {}
             .verse {
               color: #009966;
@@ -382,6 +408,7 @@ final class AppDatabase: ObservableObject {
               margin-top: 10px;
             }
             .synonyms {
+              display: \(displaySynonyms);
               text-indent: 0;
               margin-top: 0;
             }
@@ -393,8 +420,15 @@ final class AppDatabase: ObservableObject {
               display: inline;
             }
             .word { color: #009966; }
-            .translation { font-family: DejaVuBold, serif; }
-            .purport, .body { text-indent: 24px; }
+            .translation {
+              display: \(displayTranslation);
+              font-family: DejaVuBold, serif;
+            }
+            .purport {
+              display: \(displayPurport);
+              text-indent: 24px;
+            }
+            .body { text-indent: 24px; }
             .paragraph { margin-top: 16px; }
             .foreign {
               font-family: DejaVuItalic, serif;
@@ -402,8 +436,8 @@ final class AppDatabase: ObservableObject {
             }
             .heading {
               margin-top: 18px;
-              border-top: 1px solid #1f1d1a;
-              border-bottom: 1px solid #1f1d1a;
+              border-top: 1px solid \(foreground);
+              border-bottom: 1px solid \(foreground);
               font-weight: bold;
               text-indent: 0;
             }
