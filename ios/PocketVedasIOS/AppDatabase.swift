@@ -110,12 +110,9 @@ final class AppDatabase: ObservableObject {
         ).appendingPathComponent("PocketVedas", isDirectory: true)
         try fileManager.createDirectory(at: supportDirectory, withIntermediateDirectories: true)
 
-        let vedabaseURL = try copyReadOnlyDatabaseIfNeeded(
-            named: "vedabase",
-            ext: "db",
-            subdirectory: "raw",
-            to: supportDirectory.appendingPathComponent("vedabase.db")
-        )
+        guard let vedabaseURL = bundleResourceURL(named: "vedabase", ext: "db", subdirectory: "raw") else {
+            throw DatabaseError.missingResource("vedabase.db")
+        }
         let bookmarksURL = try copyBundleResourceIfNeeded(
             named: "bookmarks",
             ext: "db",
@@ -123,7 +120,7 @@ final class AppDatabase: ObservableObject {
             to: supportDirectory.appendingPathComponent("bookmarks.db")
         )
 
-        guard sqlite3_open(vedabaseURL.path, &vedabase) == SQLITE_OK else {
+        guard sqlite3_open_v2(vedabaseURL.path, &vedabase, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else {
             throw DatabaseError.openFailed("Unable to open vedabase.db")
         }
         guard sqlite3_open(bookmarksURL.path, &bookmarkDB) == SQLITE_OK else {
@@ -140,45 +137,6 @@ final class AppDatabase: ObservableObject {
             try fileManager.copyItem(at: source, to: destination)
         }
         return destination
-    }
-
-    private func copyReadOnlyDatabaseIfNeeded(named: String, ext: String, subdirectory: String, to destination: URL) throws -> URL {
-        let fileManager = FileManager.default
-        guard let source = bundleResourceURL(named: named, ext: ext, subdirectory: subdirectory) else {
-            throw DatabaseError.missingResource("\(named).\(ext)")
-        }
-
-        let shouldCopy: Bool
-        if fileManager.fileExists(atPath: destination.path) {
-            shouldCopy = (try? bundledDatabaseIsNewer(source: source, destination: destination)) ?? true
-        } else {
-            shouldCopy = true
-        }
-
-        if shouldCopy {
-            if fileManager.fileExists(atPath: destination.path) {
-                try fileManager.removeItem(at: destination)
-            }
-            try fileManager.copyItem(at: source, to: destination)
-        }
-
-        return destination
-    }
-
-    private func bundledDatabaseIsNewer(source: URL, destination: URL) throws -> Bool {
-        let sourceVersion = try databaseVersion(at: source)
-        let destinationVersion = try databaseVersion(at: destination)
-        return sourceVersion > destinationVersion
-    }
-
-    private func databaseVersion(at url: URL) throws -> Int64 {
-        var db: OpaquePointer?
-        guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else {
-            throw DatabaseError.openFailed("Unable to inspect \(url.lastPathComponent)")
-        }
-        defer { sqlite3_close(db) }
-
-        return try scalarInt64(db: db, sql: "SELECT version FROM version LIMIT 1")
     }
 
     private func bundleResourceURL(named: String, ext: String, subdirectory: String) -> URL? {

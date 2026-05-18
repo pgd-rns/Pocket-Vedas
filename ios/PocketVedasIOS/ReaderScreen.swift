@@ -26,6 +26,7 @@ struct ReaderScreen: View {
         .navigationTitle(currentPage?.title ?? "Reading")
         .navigationBarTitleDisplayMode(.inline)
         .pocketToolbar(title: currentPage?.title ?? "Reading", bookmarkPath: currentPath)
+        .toolbar(.hidden, for: .tabBar)
         .task(id: currentPath) {
             loadPage()
         }

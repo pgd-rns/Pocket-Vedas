@@ -106,12 +106,7 @@ struct BooksView: View {
             }
             .padding()
         }
-        .background(
-            LinearGradient(colors: [Color(red: 0.99, green: 0.95, blue: 0.9), Color(red: 0.96, green: 0.9, blue: 0.82)],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-        )
+        .pocketScreenBackground()
         .navigationTitle("Pocket Vedas")
         .navigationBarTitleDisplayMode(.inline)
         .pocketToolbar(title: "Pocket Vedas")
@@ -144,7 +139,10 @@ struct SearchScreen: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .listRowBackground(Color.clear)
         }
+        .scrollContentBackground(.hidden)
+        .pocketScreenBackground()
         .navigationTitle("Search")
         .navigationBarTitleDisplayMode(.inline)
         .pocketToolbar(title: "Pocket Vedas")
@@ -182,6 +180,7 @@ struct BookmarksView: View {
                         }
                     }
                 }
+                .listRowBackground(Color.clear)
             }
             .onDelete { indexSet in
                 for index in indexSet {
@@ -193,6 +192,8 @@ struct BookmarksView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .pocketScreenBackground()
         .navigationTitle("Bookmarks")
         .navigationBarTitleDisplayMode(.inline)
         .pocketToolbar(title: "Pocket Vedas")
@@ -229,6 +230,8 @@ struct SettingsScreen: View {
                 Toggle("Keep awake", isOn: $keepAwake)
             }
         }
+        .scrollContentBackground(.hidden)
+        .pocketScreenBackground()
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .pocketToolbar(title: "Settings")
@@ -364,5 +367,36 @@ struct AddBookmarkScreen: View {
 extension View {
     func pocketToolbar(title: String, bookmarkPath: String? = nil) -> some View {
         modifier(PocketToolbarModifier(title: title, bookmarkPath: bookmarkPath))
+    }
+
+    func pocketScreenBackground() -> some View {
+        modifier(PocketScreenBackgroundModifier())
+    }
+}
+
+struct PocketScreenBackgroundModifier: ViewModifier {
+    @AppStorage("pref_reverse") private var blackOnWhite = true
+
+    func body(content: Content) -> some View {
+        content
+            .background(background.ignoresSafeArea())
+            .preferredColorScheme(blackOnWhite ? .light : .dark)
+    }
+
+    private var background: some View {
+        Group {
+            if blackOnWhite {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.99, green: 0.95, blue: 0.90),
+                        Color(red: 0.96, green: 0.90, blue: 0.82)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            } else {
+                Color.black
+            }
+        }
     }
 }
