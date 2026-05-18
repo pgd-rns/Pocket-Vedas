@@ -355,11 +355,73 @@ final class AppDatabase: ObservableObject {
               font-family: DejaVuBold, serif;
               text-decoration: underline;
             }
-            .verse, .quote { text-align: center; }
+            .space { clear: both; }
+            .text-inner {}
+            .verse {
+              color: #009966;
+              text-indent: 0;
+              display: table;
+              margin: 10px auto;
+            }
+            .verse br { display: none; }
+            .prelude {
+              text-align: center;
+              margin-top: 0;
+            }
+            .odd-line {
+              text-align: left;
+              margin-top: 0;
+            }
+            .even-line {
+              text-indent: 20px;
+              text-align: left;
+              margin-top: 0;
+            }
+            .quote {
+              text-align: center;
+              margin-top: 10px;
+            }
+            .synonyms {
+              text-indent: 0;
+              margin-top: 0;
+            }
+            .synonym,
+            .word,
+            .meaning,
+            .indexTarget,
+            .indexTitle {
+              display: inline;
+            }
+            .word { color: #009966; }
             .translation { font-family: DejaVuBold, serif; }
             .purport, .body { text-indent: 24px; }
             .paragraph { margin-top: 16px; }
-            .foreign { font-family: DejaVuItalic, serif; }
+            .foreign {
+              font-family: DejaVuItalic, serif;
+              display: inline;
+            }
+            .heading {
+              margin-top: 18px;
+              border-top: 1px solid #1f1d1a;
+              border-bottom: 1px solid #1f1d1a;
+              font-weight: bold;
+              text-indent: 0;
+            }
+            ol li {
+              text-indent: 0;
+              margin-top: 5px;
+            }
+            ul {
+              list-style-type: none;
+              text-indent: 0;
+              -webkit-padding-start: 0;
+            }
+            ul li { margin-bottom: 10px; }
+            .highlight {
+              background-color: yellow;
+              color: black;
+              display: inline;
+            }
             a { color: #7e2b23; text-decoration: none; }
             mark { background: #ffef8a; }
           </style>
