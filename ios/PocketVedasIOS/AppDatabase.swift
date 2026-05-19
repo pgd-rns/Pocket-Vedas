@@ -48,6 +48,50 @@ final class AppDatabase: ObservableObject {
         return ReaderPage(id: rowID, title: title, path: resolvedPath, html: htmlShell(content))
     }
 
+    func siblingPaths(forPath path: String) throws -> (paths: [String], currentIndex: Int) {
+        let resolvedPath = try resolveRedirect(for: path)
+        let currentRowID = try rowID(forPath: resolvedPath)
+        
+        var parentID: Int64 = 0
+        var bookID: Int64 = 0
+        try query(db: vedabase, sql: "SELECT parent, book FROM division WHERE rowid = ?", bind: { sqlite3_bind_int64($0, 1, currentRowID) }) { stmt in
+            parentID = sqlite3_column_int64(stmt, 0)
+            bookID = sqlite3_column_int64(stmt, 1)
+        }
+        
+        // Book-level: when parentID == 0, the current page is the root index of
+        // a book. Siblings should be the index pages of ALL books so that
+        // swiping navigates between books (matching Android ViewPager behavior).
+        if parentID == 0 {
+            var allPaths: [String] = []
+            var currentIndex = 0
+            for book in books {
+                if book.id == bookID {
+                    currentIndex = allPaths.count
+                }
+                allPaths.append("\(book.name)/index")
+            }
+            return (allPaths, currentIndex)
+        }
+        
+        // Inner hierarchy: siblings share the same parent within the same book.
+        var paths: [String] = []
+        var currentIndex = 0
+        try query(db: vedabase, sql: "SELECT rowid FROM division WHERE parent = ? AND book = ? ORDER BY sequence", bind: { 
+            sqlite3_bind_int64($0, 1, parentID)
+            sqlite3_bind_int64($0, 2, bookID)
+        }) { stmt in
+            let siblingID = sqlite3_column_int64(stmt, 0)
+            if let p = try? self.path(forDivision: siblingID) {
+                if siblingID == currentRowID {
+                    currentIndex = paths.count
+                }
+                paths.append(p)
+            }
+        }
+        return (paths, currentIndex)
+    }
+
     func search(query queryString: String) throws -> [SearchResult] {
         let normalized = queryString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty else { return [] }
