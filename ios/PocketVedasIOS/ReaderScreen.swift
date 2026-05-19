@@ -4,39 +4,56 @@ struct ReaderScreen: View {
     @EnvironmentObject private var database: AppDatabase
     let initialPath: String
 
-    @State private var paths: [String] = []
-    @State private var currentPath: String
+    @State private var siblings: [String] = []
+    @State private var currentIndex: Int = 0
     @State private var currentPage: ReaderPage?
     @State private var nextPath = ""
 
+    // We keep a random ID to force SwiftUI to recreate the view 
+    // transition when the page changes to create a sliding effect.
+    @State private var transitionId = UUID()
+    @State private var transitionEdge: Edge = .trailing
+
+    @Environment(\.dismiss) private var dismiss
+
     init(initialPath: String) {
         self.initialPath = initialPath
-        _currentPath = State(initialValue: initialPath)
     }
 
     var body: some View {
         Group {
-            if paths.isEmpty {
+            if siblings.isEmpty || currentPage == nil {
                 ProgressView()
-            } else {
-                TabView(selection: $currentPath) {
-                    ForEach(paths, id: \.self) { path in
-                        ReaderPageView(path: path, nextPath: $nextPath)
-                            .tag(path)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
+            } else if let page = currentPage {
+                HTMLWebView(
+                    html: page.html,
+                    onOpenPath: { link in nextPath = link },
+                    onSwipeLeft: { navigateToSibling(offset: 1) },
+                    onSwipeRight: { navigateToSibling(offset: -1) }
+                )
+                .id(transitionId)
+                .transition(.asymmetric(
+                    insertion: .move(edge: transitionEdge),
+                    removal: .opacity
+                ))
+                .animation(.easeInOut(duration: 0.3), value: transitionId)
             }
         }
         .navigationTitle(currentPage?.title ?? "Reading")
         .navigationBarTitleDisplayMode(.inline)
-        .pocketToolbar(title: currentPage?.title ?? "Reading", bookmarkPath: currentPath)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                }
+            }
+        }
+        .pocketToolbar(title: currentPage?.title ?? "Reading", bookmarkPath: currentPage?.path ?? initialPath)
         .toolbar(.hidden, for: .tabBar)
         .task(id: initialPath) {
-            loadPaths()
-        }
-        .task(id: currentPath) {
-            loadPage(for: currentPath)
+            loadInitialData()
         }
         .navigationDestination(isPresented: Binding(
             get: { !nextPath.isEmpty },
@@ -46,55 +63,46 @@ struct ReaderScreen: View {
         }
     }
 
-    private func loadPaths() {
+    private func loadInitialData() {
         do {
             let result = try database.siblingPaths(forPath: initialPath)
             if result.paths.isEmpty {
-                paths = [initialPath]
-                currentPath = initialPath
+                siblings = [initialPath]
+                currentIndex = 0
             } else {
-                paths = result.paths
-                currentPath = paths[result.currentIndex]
+                siblings = result.paths
+                currentIndex = result.currentIndex
             }
+            loadCurrentPage()
         } catch {
             database.lastError = error.localizedDescription
-            paths = [initialPath]
-            currentPath = initialPath
+            siblings = [initialPath]
+            currentIndex = 0
         }
     }
 
-    private func loadPage(for path: String) {
+    private func loadCurrentPage() {
+        guard siblings.indices.contains(currentIndex) else { return }
+        let path = siblings[currentIndex]
         do {
             currentPage = try database.readerPage(forPath: path)
         } catch {
             database.lastError = error.localizedDescription
         }
     }
-}
 
-struct ReaderPageView: View {
-    @EnvironmentObject private var database: AppDatabase
-    let path: String
-    @Binding var nextPath: String
-
-    @State private var page: ReaderPage?
-
-    var body: some View {
-        Group {
-            if let page {
-                HTMLWebView(html: page.html) { link in
-                    nextPath = link
-                }
-            } else {
-                ProgressView()
-            }
-        }
-        .task(id: path) {
-            do {
-                page = try database.readerPage(forPath: path)
-            } catch {
-                database.lastError = error.localizedDescription
-            }
+    private func navigateToSibling(offset: Int) {
+        let newIndex = currentIndex + offset
+        guard newIndex >= 0 && newIndex < siblings.count else { return }
+        
+        transitionEdge = offset > 0 ? .trailing : .leading
+        
+        withAnimation {
+            currentIndex = newIndex
+            transitionId = UUID()
+            loadCurrentPage()
         }
     }
 }
+
+

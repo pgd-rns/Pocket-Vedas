@@ -4,14 +4,18 @@ import WebKit
 struct HTMLWebView: UIViewRepresentable {
     let html: String
     let onOpenPath: (String) -> Void
+    var onSwipeLeft: (() -> Void)? = nil
+    var onSwipeRight: (() -> Void)? = nil
 
-    init(html: String, onOpenPath: @escaping (String) -> Void) {
+    init(html: String, onOpenPath: @escaping (String) -> Void, onSwipeLeft: (() -> Void)? = nil, onSwipeRight: (() -> Void)? = nil) {
         self.html = html
         self.onOpenPath = onOpenPath
+        self.onSwipeLeft = onSwipeLeft
+        self.onSwipeRight = onSwipeRight
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onOpenPath: onOpenPath)
+        Coordinator(onOpenPath: onOpenPath, onSwipeLeft: onSwipeLeft, onSwipeRight: onSwipeRight)
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -21,10 +25,25 @@ struct HTMLWebView: UIViewRepresentable {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.isOpaque = false
         webView.backgroundColor = .clear
+
+        // Add native swipe gesture recognizers
+        let swipeLeft = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleSwipeLeft))
+        swipeLeft.direction = .left
+        swipeLeft.delegate = context.coordinator
+        webView.addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleSwipeRight))
+        swipeRight.direction = .right
+        swipeRight.delegate = context.coordinator
+        webView.addGestureRecognizer(swipeRight)
+
         return webView
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
+        context.coordinator.onSwipeLeft = onSwipeLeft
+        context.coordinator.onSwipeRight = onSwipeRight
+
         guard context.coordinator.lastHTML != html else { return }
         context.coordinator.lastHTML = html
 
@@ -97,12 +116,28 @@ struct HTMLWebView: UIViewRepresentable {
         """
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, UIGestureRecognizerDelegate {
         let onOpenPath: (String) -> Void
+        var onSwipeLeft: (() -> Void)?
+        var onSwipeRight: (() -> Void)?
         var lastHTML = ""
 
-        init(onOpenPath: @escaping (String) -> Void) {
+        init(onOpenPath: @escaping (String) -> Void, onSwipeLeft: (() -> Void)?, onSwipeRight: (() -> Void)?) {
             self.onOpenPath = onOpenPath
+            self.onSwipeLeft = onSwipeLeft
+            self.onSwipeRight = onSwipeRight
+        }
+
+        @objc func handleSwipeLeft() {
+            onSwipeLeft?()
+        }
+
+        @objc func handleSwipeRight() {
+            onSwipeRight?()
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            return true
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
