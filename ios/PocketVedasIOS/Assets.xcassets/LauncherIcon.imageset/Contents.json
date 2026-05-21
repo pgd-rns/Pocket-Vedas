@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "LauncherIcon-1x.png",
+      "filename" : "pv-icon-1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "LauncherIcon-2x.png",
+      "filename" : "pv-icon-2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "LauncherIcon-3x.png",
+      "filename" : "pv-icon-3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

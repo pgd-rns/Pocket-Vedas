@@ -72,44 +72,48 @@ struct RootView: View {
 struct BooksView: View {
     @EnvironmentObject private var database: AppDatabase
 
-    private let columns = [GridItem(.adaptive(minimum: 130), spacing: 16)]
+    private let columns = [GridItem(.adaptive(minimum: 110), spacing: 14)]
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
+            LazyVGrid(columns: columns, spacing: 14) {
                 ForEach(database.books) { book in
                     NavigationLink(value: "book:\(book.id)") {
-                        VStack(spacing: 10) {
+                        VStack(spacing: 8) {
                             if let coverData = book.coverData, let image = UIImage(data: coverData) {
                                 Image(uiImage: image)
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 180)
-                                    .shadow(radius: 6, y: 3)
+                                    .scaledToFill()
+                                    .aspectRatio(2/3, contentMode: .fit)
+                                    .clipped()
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .shadow(radius: 5, y: 3)
                             } else {
-                                RoundedRectangle(cornerRadius: 14)
+                                RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.orange.opacity(0.18))
-                                    .frame(height: 180)
+                                    .aspectRatio(2/3, contentMode: .fit)
                                     .overlay(Image(systemName: "book.closed").font(.largeTitle))
                             }
 
                             Text(book.name)
-                                .font(.headline)
+                                .font(.caption)
+                                .fontWeight(.semibold)
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(.primary)
+                                .lineLimit(2)
                         }
-                        .padding(12)
+                        .padding(10)
                         .frame(maxWidth: .infinity)
-                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
                     }
                 }
             }
             .padding()
         }
         .pocketScreenBackground()
-        .navigationTitle("Pocket Vedas")
+        .navigationTitle("PV")
         .navigationBarTitleDisplayMode(.inline)
-        .pocketToolbar(title: "Pocket Vedas")
+        .pocketToolbar(title: "PV")
         .navigationDestination(for: String.self) { token in
             if token.hasPrefix("book:"),
                let id = Int64(token.replacingOccurrences(of: "book:", with: "")),
@@ -145,7 +149,7 @@ struct SearchScreen: View {
         .pocketScreenBackground()
         .navigationTitle("Search")
         .navigationBarTitleDisplayMode(.inline)
-        .pocketToolbar(title: "Pocket Vedas")
+        .pocketToolbar(title: "PV")
         .searchable(text: $query, prompt: "Search scripture")
         .onSubmit(of: .search) {
             do {
@@ -196,7 +200,7 @@ struct BookmarksView: View {
         .pocketScreenBackground()
         .navigationTitle("Bookmarks")
         .navigationBarTitleDisplayMode(.inline)
-        .pocketToolbar(title: "Pocket Vedas")
+        .pocketToolbar(title: "PV")
         .navigationDestination(isPresented: Binding(
             get: { !selectedPath.isEmpty },
             set: { if !$0 { selectedPath = "" } }

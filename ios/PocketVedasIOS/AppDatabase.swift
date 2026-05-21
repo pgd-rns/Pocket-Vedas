@@ -198,7 +198,18 @@ final class AppDatabase: ObservableObject {
             let cover = blob.map { Data(bytes: $0, count: length) }
             loaded.append(Book(id: id, name: name, coverData: cover))
         }
-        books = loaded
+        // Pin BG, SB, CC to the front; everything else follows alphabetically.
+        let pinnedOrder = ["BG", "SB", "CC"]
+        books = loaded.sorted { a, b in
+            let ia = pinnedOrder.firstIndex(of: a.name)
+            let ib = pinnedOrder.firstIndex(of: b.name)
+            switch (ia, ib) {
+            case let (i?, j?): return i < j          // both pinned → use pin order
+            case (.some, nil): return true            // a pinned, b not → a first
+            case (nil, .some): return false           // b pinned, a not → b first
+            default: return a.name < b.name           // neither pinned → alphabetical
+            }
+        }
     }
 
     private func loadBookmarks() throws {
