@@ -1,3 +1,25 @@
 /build
 /dist
 assets/raw/vedabase.db
+android/app/src/main/assets/raw/vedabase.db
+.DS_Store
+android/local.properties
+android/.kotlin/
+
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+
+
+# Generated APKs
+*.apk
+*.aab
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+
+# Large DB files (optional)
+android/app/src/main/assets/**/*.db
