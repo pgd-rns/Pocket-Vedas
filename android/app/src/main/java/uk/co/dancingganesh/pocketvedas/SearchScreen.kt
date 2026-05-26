@@ -15,6 +15,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 
 /**
@@ -61,13 +64,15 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search input
+            // Search input — pressing the Search key on the keyboard triggers the search
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
                 label = { Text("Search scripture") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { performSearch() }),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -77,19 +82,6 @@ fun SearchScreen(
                     cursorColor = AccentGreen
                 )
             )
-
-            // Search button
-            Button(
-                onClick = { performSearch() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
-            ) {
-                Text("Search")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             // Results
             if (hasSearched && results.isEmpty()) {
