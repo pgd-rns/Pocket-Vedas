@@ -10,7 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 
 /**
@@ -115,9 +119,7 @@ fun SearchScreen(
                             },
                             supportingContent = {
                                 Text(
-                                    result.snippet
-                                        .replace("<mark>", "")
-                                        .replace("</mark>", ""),
+                                    text = buildSnippetAnnotatedString(result.snippet),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 2
                                 )
@@ -137,5 +139,42 @@ fun SearchScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Parses a snippet string containing <mark>…</mark> tags and returns an
+ * AnnotatedString where the matched keyword is highlighted with a yellow
+ * background and bold weight — instead of showing plain text or "0" prefix.
+ */
+fun buildSnippetAnnotatedString(snippet: String): AnnotatedString = buildAnnotatedString {
+    var remaining = snippet
+    while (remaining.isNotEmpty()) {
+        val start = remaining.indexOf("<mark>")
+        if (start == -1) {
+            // No more marks — append the rest as plain text
+            append(remaining)
+            break
+        }
+        // Append text before the mark
+        if (start > 0) append(remaining.substring(0, start))
+        val end = remaining.indexOf("</mark>", start)
+        if (end == -1) {
+            // Malformed: no closing tag, treat rest as plain
+            append(remaining.substring(start + "<mark>".length))
+            break
+        }
+        // Append the highlighted keyword
+        val keyword = remaining.substring(start + "<mark>".length, end)
+        withStyle(
+            SpanStyle(
+                background = Color(0xFFFFEF8A),
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1A1A)
+            )
+        ) {
+            append(keyword)
+        }
+        remaining = remaining.substring(end + "</mark>".length)
     }
 }

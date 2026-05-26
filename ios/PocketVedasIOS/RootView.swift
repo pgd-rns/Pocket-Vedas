@@ -137,8 +137,7 @@ struct SearchScreen: View {
             } label: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(result.title).font(.headline)
-                    Text(result.snippet.replacingOccurrences(of: "<mark>", with: "")
-                        .replacingOccurrences(of: "</mark>", with: ""))
+                    Text(highlightedSnippet(result.snippet))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -165,7 +164,46 @@ struct SearchScreen: View {
             ReaderScreen(initialPath: selectedPath)
         }
     }
+
+    /// Parses a snippet string with `<mark>…</mark>` tags and returns an
+    /// AttributedString where matched keywords are highlighted in yellow/bold.
+    private func highlightedSnippet(_ snippet: String) -> AttributedString {
+        var result = AttributedString()
+        var remaining = snippet
+
+        while !remaining.isEmpty {
+            if let markRange = remaining.range(of: "<mark>") {
+                // Append plain text before the mark
+                let before = String(remaining[remaining.startIndex..<markRange.lowerBound])
+                if !before.isEmpty {
+                    result += AttributedString(before)
+                }
+                remaining = String(remaining[markRange.upperBound...])
+
+                // Find closing tag
+                if let closeRange = remaining.range(of: "</mark>") {
+                    let keyword = String(remaining[remaining.startIndex..<closeRange.lowerBound])
+                    var highlighted = AttributedString(keyword)
+                    highlighted.backgroundColor = .init(UIColor(red: 1, green: 0.94, blue: 0.54, alpha: 1))
+                    highlighted.font = .subheadline.bold()
+                    highlighted.foregroundColor = .init(UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1))
+                    result += highlighted
+                    remaining = String(remaining[closeRange.upperBound...])
+                } else {
+                    // Malformed — no closing tag, append the rest as plain
+                    result += AttributedString(remaining)
+                    break
+                }
+            } else {
+                // No more marks — append rest as plain text
+                result += AttributedString(remaining)
+                break
+            }
+        }
+        return result
+    }
 }
+
 
 struct BookmarksView: View {
     @EnvironmentObject private var database: AppDatabase

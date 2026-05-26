@@ -99,7 +99,7 @@ final class AppDatabase: ObservableObject {
         let sql = """
         SELECT rowid,
                COALESCE((SELECT title FROM verse WHERE verse.rowid = searching.rowid), ''),
-               snippet(searching, 0, '<mark>', '</mark>', ' ... ', 18)
+               snippet(searching, '<mark>', '</mark>', ' ... ', -1, 18)
         FROM searching
         WHERE plain MATCH ?
         LIMIT 100
